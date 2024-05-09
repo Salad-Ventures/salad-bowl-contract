@@ -9,7 +9,7 @@ import {SafeERC20, IERC20} from "@openzeppelin5/contracts/token/ERC20/utils/Safe
 import {MerkleProof} from "@openzeppelin5/contracts/utils/cryptography/MerkleProof.sol";
 
 import {ISaldcoinStaking} from "./interfaces/ISaldcoinStaking.sol";
-import {SaldcoinDelegatableUpgradeable} from "contracts/saldcoin/delegate/SaldcoinDelegatableUpgradeable.sol";
+import {SaldcoinDelegatableUpgradeable} from "../delegate/SaldcoinDelegatableUpgradeable.sol";
 
 contract SaldcoinStaking is
     Initializable,
@@ -62,35 +62,22 @@ contract SaldcoinStaking is
     // ==================
 
     /// @inheritdoc ISaldcoinStaking
-    function stake(uint256 amount, Reward[] calldata rewards, bytes calldata permit)
+    function stake(uint256 amount)
         external
         nonReentrant
         onlyValidStakingSetup
         onlyValidAmount(amount)
     {
-        if (rewards.length != 0) _redeemRewards(_msgSender(), rewards);
-        _stake(_msgSender(), amount, permit);
+        _stake(_msgSender(), amount, "");
     }
 
     /// @inheritdoc ISaldcoinStaking
-    function stakeFor(address user, uint256 amount, bytes calldata permit)
-        external
-        nonReentrant
-        onlyValidStakingSetup
-        onlyValidAmount(amount)
-        onlyDelegatable
-    {
-        _stake(user, amount, permit);
-    }
-
-    /// @inheritdoc ISaldcoinStaking
-    function unstake(uint256 amount, Reward[] calldata rewards)
+    function unstake(uint256 amount)
         external
         nonReentrant
         onlyValidStakingSetup
         onlyValidAmount(amount)
     {
-        if (rewards.length != 0) _redeemRewards(_msgSender(), rewards);
         _unstake(_msgSender(), amount);
     }
 
@@ -245,23 +232,6 @@ contract SaldcoinStaking is
      */
     function totalSupply() external view returns (uint256) {
         return saldcoin.balanceOf(address(this));
-    }
-
-    /// @inheritdoc ISaldcoinStaking
-    function stakeOf(address user, Reward[] calldata rewards) external view returns (uint256 balance) {
-        balance = balanceOf[user];
-        if (rewards.length != 0) {
-            for (uint256 i; i < rewards.length; i++) {
-                Reward calldata reward = rewards[i];
-                uint256 amount = reward.amount;
-                uint256 rewardId = reward.rewardId;
-
-                if (_usersRewardRedeemedAt[user][rewardId] > 0) continue;
-                if (!_verifyProof(user, rewardId, amount, reward.proof)) revert InvalidProof();
-
-                balance += amount;
-            }
-        }
     }
 
     /// @inheritdoc ISaldcoinStaking
