@@ -68,7 +68,7 @@ contract SaldcoinStaking is
         onlyValidStakingSetup
         onlyValidAmount(amount)
     {
-        _stake(_msgSender(), amount, "");
+        _stake(_msgSender(), amount);
     }
 
     /// @inheritdoc ISaldcoinStaking
@@ -85,9 +85,7 @@ contract SaldcoinStaking is
     // Internal & Private Functions
     // ============================
 
-    function _stake(address user, uint256 amount, bytes calldata permit) private {
-        if (permit.length != 0) _delegatePermit(permit);
-
+    function _stake(address user, uint256 amount) private {
         unchecked {
             balanceOf[user] += amount;
         }
