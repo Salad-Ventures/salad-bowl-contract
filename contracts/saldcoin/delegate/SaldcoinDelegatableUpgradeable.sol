@@ -31,7 +31,7 @@ abstract contract SaldcoinDelegatableUpgradeable is ContextUpgradeable {
     function _delegatePermit(bytes calldata _permit) internal {
         (uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s) =
             abi.decode(_permit, (uint256, uint256, uint8, bytes32, bytes32));
-        try IERC20Permit(_delegate.memecoin()).permit(_msgSender(), address(_delegate), value, deadline, v, r, s) {}
+        try IERC20Permit(_delegate.saldcoin()).permit(_msgSender(), address(_delegate), value, deadline, v, r, s) {}
             catch {}
     }
 

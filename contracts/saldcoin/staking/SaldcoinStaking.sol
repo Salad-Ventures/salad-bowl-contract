@@ -9,7 +9,7 @@ import {SafeERC20, IERC20} from "@openzeppelin5/contracts/token/ERC20/utils/Safe
 import {MerkleProof} from "@openzeppelin5/contracts/utils/cryptography/MerkleProof.sol";
 
 import {ISaldcoinStaking} from "./interfaces/ISaldcoinStaking.sol";
-import {SaldcoinDelegatableUpgradeable} from "contracts/memecoin/delegate/SaldcoinDelegatableUpgradeable.sol";
+import {SaldcoinDelegatableUpgradeable} from "contracts/saldcoin/delegate/SaldcoinDelegatableUpgradeable.sol";
 
 contract SaldcoinStaking is
     Initializable,
@@ -23,7 +23,7 @@ contract SaldcoinStaking is
 
     uint256 private constant _MINIMUM_AMOUNT = 1e18;
 
-    IERC20 public memecoin;
+    IERC20 public saldcoin;
     bool public stakingActive;
     bool public upgraderRenounced;
     uint64 public stakingStartDate;
@@ -46,15 +46,15 @@ contract SaldcoinStaking is
         _disableInitializers();
     }
 
-    function initialize(address _memecoin, address _delegate) external initializer {
-        if (_memecoin == address(0) || _delegate == address(0)) revert InvalidAddress();
+    function initialize(address _saldcoin, address _delegate) external initializer {
+        if (_saldcoin == address(0) || _delegate == address(0)) revert InvalidAddress();
 
         ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
         OwnableUpgradeable.__Ownable_init(_msgSender());
         UUPSUpgradeable.__UUPSUpgradeable_init();
         SaldcoinDelegatableUpgradeable.__SaldcoinDelegatable_init(_delegate);
 
-        memecoin = IERC20(_memecoin);
+        saldcoin = IERC20(_saldcoin);
     }
 
     // ==================
@@ -116,7 +116,7 @@ contract SaldcoinStaking is
         unchecked {
             balanceOf[user] = userBalance - amount;
         }
-        memecoin.safeTransfer(user, amount);
+        saldcoin.safeTransfer(user, amount);
         emit Transfer(user, address(0), amount);
 
         emit Unstaked(user, amount, block.timestamp);
@@ -191,7 +191,7 @@ contract SaldcoinStaking is
         if (depositor == address(0) || amount == 0 || root == bytes32(0)) revert InvalidStakingSetup();
 
         rewardsMerkleRoots[rewardId] = root;
-        memecoin.safeTransferFrom(depositor, address(this), amount);
+        saldcoin.safeTransferFrom(depositor, address(this), amount);
         emit Transfer(address(0), address(this), amount);
 
         emit RewardStaked(rewardId, amount, block.timestamp);
@@ -244,7 +244,7 @@ contract SaldcoinStaking is
      * @notice Get the total staked amount
      */
     function totalSupply() external view returns (uint256) {
-        return memecoin.balanceOf(address(this));
+        return saldcoin.balanceOf(address(this));
     }
 
     /// @inheritdoc ISaldcoinStaking

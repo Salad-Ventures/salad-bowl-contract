@@ -27,31 +27,31 @@ interface ISaldcoinStaking is IERC20TokenTracker {
     event UpgraderUpdated(address _upgrader);
 
     /**
-     * @notice Stake MEME into staking contract
-     * @param amount The amount of MEME to stake from user's wallet
+     * @notice Stake SALD into staking contract
+     * @param amount The amount of SALD to stake from user's wallet
      * @param rewards Array of Rewards (rewardId, amount, and proof) for verifying any unredeemed rewards that are intended to be staked. Input an empty array if no rewards are intended to be redeemed and staked
      * @param permit Encoded permit data
      */
     function stake(uint256 amount, Reward[] calldata rewards, bytes calldata permit) external;
 
     /**
-     * @notice Stake MEME into staking contract
-     * @param user The address to stake MEME to
-     * @param amount The amount of MEME to stake from user's wallet
+     * @notice Stake SALD into staking contract
+     * @param user The address to stake SALD to
+     * @param amount The amount of SALD to stake from user's wallet
      * @param permit Encoded permit data
      */
     function stakeFor(address user, uint256 amount, bytes calldata permit) external;
 
     /**
-     * @notice Unstake MEME from staking contract
-     * @param amount The total amount of MEME to unstake from staked balance and any unredeemed rewards
+     * @notice Unstake SALD from staking contract
+     * @param amount The total amount of SALD to unstake from staked balance and any unredeemed rewards
      * @param rewards Array of Rewards (rewardId, amount, and proof) for verifying any unredeemed rewards that are intended to be unstaked. Input an empty array if no rewards are intended to be redeemed and unstaked
      */
     function unstake(uint256 amount, Reward[] calldata rewards) external;
 
     /**
      * @notice Stake rewards with specified address of depositor. Can only be called by the owner.
-     * @param depositor The address to stake MEME as rewards
+     * @param depositor The address to stake SALD as rewards
      * @param rewardId The ID of reward
      * @param amount The amount of rewards to stake
      * @param root The Merkle root to verify users' reward
