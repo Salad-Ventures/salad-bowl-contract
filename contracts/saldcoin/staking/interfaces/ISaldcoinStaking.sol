@@ -29,25 +29,15 @@ interface ISaldcoinStaking is IERC20TokenTracker {
     /**
      * @notice Stake SALD into staking contract
      * @param amount The amount of SALD to stake from user's wallet
-     * @param rewards Array of Rewards (rewardId, amount, and proof) for verifying any unredeemed rewards that are intended to be staked. Input an empty array if no rewards are intended to be redeemed and staked
-     * @param permit Encoded permit data
      */
-    function stake(uint256 amount, Reward[] calldata rewards, bytes calldata permit) external;
+    function stake(uint256 amount) external;
 
-    /**
-     * @notice Stake SALD into staking contract
-     * @param user The address to stake SALD to
-     * @param amount The amount of SALD to stake from user's wallet
-     * @param permit Encoded permit data
-     */
-    function stakeFor(address user, uint256 amount, bytes calldata permit) external;
 
     /**
      * @notice Unstake SALD from staking contract
      * @param amount The total amount of SALD to unstake from staked balance and any unredeemed rewards
-     * @param rewards Array of Rewards (rewardId, amount, and proof) for verifying any unredeemed rewards that are intended to be unstaked. Input an empty array if no rewards are intended to be redeemed and unstaked
-     */
-    function unstake(uint256 amount, Reward[] calldata rewards) external;
+    */
+    function unstake(uint256 amount) external;
 
     /**
      * @notice Stake rewards with specified address of depositor. Can only be called by the owner.
@@ -56,7 +46,7 @@ interface ISaldcoinStaking is IERC20TokenTracker {
      * @param amount The amount of rewards to stake
      * @param root The Merkle root to verify users' reward
      */
-    function stakeRewards(address depositor, uint256 rewardId, uint256 amount, bytes32 root) external;
+    // function stakeRewards(address depositor, uint256 rewardId, uint256 amount, bytes32 root) external;
 
     /**
      * @notice Pause/unpause staking. Can only be called by the owner.
@@ -75,7 +65,7 @@ interface ISaldcoinStaking is IERC20TokenTracker {
      * @param user The address of user
      * @param rewards Array of Rewards (rewardId, amount and proof) to verify any undeemed rewards
      */
-    function stakeOf(address user, Reward[] calldata rewards) external view returns (uint256 balance);
+    // function stakeOf(address user, Reward[] calldata rewards) external view returns (uint256 balance);
 
     /**
      * @notice Get the timestamp of when the reward was redeemed. Returns 0 if it has not been redeemed.

@@ -1,22 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.20;
 
-import {Initializable} from "@openzeppelin5/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {UUPSUpgradeable} from "@openzeppelin5/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin5/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
-import {OwnableUpgradeable} from "@openzeppelin5/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {SafeERC20, IERC20} from "@openzeppelin5/contracts/token/ERC20/utils/SafeERC20.sol";
 import {MerkleProof} from "@openzeppelin5/contracts/utils/cryptography/MerkleProof.sol";
 
 import {ISaldcoinStaking} from "./interfaces/ISaldcoinStaking.sol";
-import {SaldcoinDelegatableUpgradeable} from "../delegate/SaldcoinDelegatableUpgradeable.sol";
+
 
 contract SaldcoinStaking is
-    Initializable,
-    UUPSUpgradeable,
     ReentrancyGuardUpgradeable,
-    OwnableUpgradeable,
-    SaldcoinDelegatableUpgradeable,
     ISaldcoinStaking
 {
     using SafeERC20 for IERC20;
@@ -25,10 +18,9 @@ contract SaldcoinStaking is
 
     IERC20 public saldcoin;
     bool public stakingActive;
-    bool public upgraderRenounced;
+
     uint64 public stakingStartDate;
 
-    address public upgrader; // to be set
 
     mapping(address user => uint256 balance) public balanceOf;
     mapping(uint256 rewardId => bytes32 merkleRoot) public rewardsMerkleRoots;
@@ -37,24 +29,18 @@ contract SaldcoinStaking is
     string public constant name = "Staked Saldcoin";
     string public constant symbol = "";
     uint8 public constant decimals = 18;
+    address public owner;
 
-    // required by the OZ UUPS module
-    function _authorizeUpgrade(address) internal override onlyUpgrader {}
-
+ 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
-        _disableInitializers();
+        owner=msg.sender;
+        stakingActive=true;
+        saldcoin=IERC20(0x5582a479f0c403E207D2578963CceF5D03BA636f);
     }
 
-    function initialize(address _saldcoin, address _delegate) external initializer {
-        if (_saldcoin == address(0) || _delegate == address(0)) revert InvalidAddress();
-
-        ReentrancyGuardUpgradeable.__ReentrancyGuard_init();
-        OwnableUpgradeable.__Ownable_init(_msgSender());
-        UUPSUpgradeable.__UUPSUpgradeable_init();
-        SaldcoinDelegatableUpgradeable.__SaldcoinDelegatable_init(_delegate);
-
-        saldcoin = IERC20(_saldcoin);
+    function setSaldcoinAddr(address addr) external onlyOwner{
+        saldcoin = IERC20(addr);
     }
 
     // ==================
@@ -66,9 +52,8 @@ contract SaldcoinStaking is
         external
         nonReentrant
         onlyValidStakingSetup
-        onlyValidAmount(amount)
     {
-        _stake(_msgSender(), amount);
+        _stake(msg.sender, amount);
     }
 
     /// @inheritdoc ISaldcoinStaking
@@ -76,9 +61,8 @@ contract SaldcoinStaking is
         external
         nonReentrant
         onlyValidStakingSetup
-        onlyValidAmount(amount)
     {
-        _unstake(_msgSender(), amount);
+        _unstake(msg.sender, amount);
     }
 
     // ============================
@@ -89,7 +73,7 @@ contract SaldcoinStaking is
         unchecked {
             balanceOf[user] += amount;
         }
-        _delegateTransfer(address(this), amount);
+        saldcoin.safeTransferFrom(user, address(this), amount);
         emit Transfer(address(0), user, amount);
 
         emit Staked(user, amount, block.timestamp);
@@ -98,9 +82,9 @@ contract SaldcoinStaking is
     function _unstake(address user, uint256 amount) private {
         uint256 userBalance = balanceOf[user];
         if (userBalance < amount) revert InsufficientStakedBalance();
-        unchecked {
-            balanceOf[user] = userBalance - amount;
-        }
+
+        balanceOf[user] = userBalance - amount;
+        
         saldcoin.safeTransfer(user, amount);
         emit Transfer(user, address(0), amount);
 
@@ -151,14 +135,13 @@ contract SaldcoinStaking is
     // ====================
     // Validation Modifiers
     // ====================
-
-    modifier onlyUpgrader() {
-        if (_msgSender() != upgrader) revert Unauthorized();
-        _;
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can call this function");
+        _; // Continue execution of the function if the condition is met
     }
 
     modifier onlyValidStakingSetup() {
-        if (!stakingActive || stakingStartDate == 0 || block.timestamp < stakingStartDate) revert StakingNotAvailable();
+        if (!stakingActive) revert StakingNotAvailable();
         _;
     }
 
@@ -171,7 +154,6 @@ contract SaldcoinStaking is
     // Admin Functions
     // ==============
 
-    /// @inheritdoc ISaldcoinStaking
     function stakeRewards(address depositor, uint256 rewardId, uint256 amount, bytes32 root) external onlyOwner {
         if (depositor == address(0) || amount == 0 || root == bytes32(0)) revert InvalidStakingSetup();
 
@@ -197,29 +179,6 @@ contract SaldcoinStaking is
         emit StakingStatusUpdated(true);
     }
 
-    /**
-     * @notice Set the new UUPS proxy upgrader. Can only be called by the owner.
-     * @param _upgrader The address of new upgrader
-     */
-    function setUpgrader(address _upgrader) external onlyOwner {
-        if (upgraderRenounced) revert UpgraderRenounced();
-        if (_upgrader == address(0)) revert InvalidAddress();
-        upgrader = _upgrader;
-
-        emit UpgraderUpdated(_upgrader);
-    }
-
-    /**
-     * @notice Renounce the upgradibility of staking contract. Can only be called by the owner.
-     */
-    function renounceUpgrader() external onlyOwner {
-        if (upgraderRenounced) revert UpgraderRenounced();
-
-        upgraderRenounced = true;
-        upgrader = address(0);
-
-        emit UpgraderUpdated(address(0));
-    }
 
     // ==============
     // Getters
