@@ -54,23 +54,4 @@ interface ISaldcoinStaking is IERC20TokenTracker {
      */
     function setStakingActive(bool isActive) external;
 
-    /**
-     * @notice Set the staking start date and set staking as active
-     * @param _stakingStartDate The date where staking starts
-     */
-    function setStakingStartDate(uint64 _stakingStartDate) external;
-
-    /**
-     * @notice Get user staked balance plus any unredeemed rewards, given valid proofs of rewards
-     * @param user The address of user
-     * @param rewards Array of Rewards (rewardId, amount and proof) to verify any undeemed rewards
-     */
-    // function stakeOf(address user, Reward[] calldata rewards) external view returns (uint256 balance);
-
-    /**
-     * @notice Get the timestamp of when the reward was redeemed. Returns 0 if it has not been redeemed.
-     * @param user The address of user
-     * @param rewardId The ID of reward
-     */
-    function getRewardRedeemedAt(address user, uint256 rewardId) external view returns (uint256);
 }

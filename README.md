@@ -2,28 +2,8 @@
 
 Smart contracts for Salad Bowl.
 
-## Building the project
+SaldcoinStaking.sol - Staking contract for Saladcoin. Users can stake Saladcoin to earn rewards.
 
-After any changes to the contract, run:
+Rewards.sol - Rewards contract for Saladcoin. Users can claim rewards from the rewards contract.
 
-```bash
-npm run build
-# or
-yarn build
-```
-
-## Deploying Contracts
-
-When you're ready to deploy your contracts, just run one of the following command to deploy your contracts:
-
-```bash
-npm run deploy
-# or
-yarn deploy
-```
-
-## Testing Contracts
-
-```
-npx hardhat test
-```
+mytoken.sol - TEST　ERC20 token contract for Saladcoin.

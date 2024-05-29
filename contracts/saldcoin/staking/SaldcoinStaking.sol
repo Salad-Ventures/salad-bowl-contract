@@ -23,7 +23,6 @@ contract SaldcoinStaking is
 
 
     mapping(address user => uint256 balance) public balanceOf;
-    mapping(uint256 rewardId => bytes32 merkleRoot) public rewardsMerkleRoots;
     mapping(address user => mapping(uint256 rewardId => uint256 redeemedAt)) private _usersRewardRedeemedAt;
 
     string public constant name = "Staked Saldcoin";
@@ -91,47 +90,6 @@ contract SaldcoinStaking is
         emit Unstaked(user, amount, block.timestamp);
     }
 
-    /**
-     * @dev Redeem and stake user's unredeemed rewards
-     * @param user The address of user
-     * @param rewards Array of Rewards (rewardId, amount, and proof) for verifying any unredeemed rewards
-     */
-    function _redeemRewards(address user, Reward[] calldata rewards) private {
-        for (uint256 i; i < rewards.length; i++) {
-            Reward calldata reward = rewards[i];
-            uint256 rewardId = reward.rewardId;
-
-            if (_usersRewardRedeemedAt[user][rewardId] > 0) continue;
-
-            uint256 amount = reward.amount;
-            if (!_verifyProof(user, rewardId, amount, reward.proof)) revert InvalidProof();
-
-            unchecked {
-                balanceOf[user] += amount;
-            }
-            emit Transfer(address(this), user, amount);
-            _usersRewardRedeemedAt[user][rewardId] = block.timestamp;
-            emit RewardRedeemed(user, rewardId, amount, block.timestamp);
-        }
-    }
-
-    /**
-     * @dev Verify the proof against the Merkle root of specified rewardId
-     * @param user The address of user
-     * @param rewardId The ID of reward
-     * @param amount The amount of reward
-     * @param merkleProof The Merkle proof to be verified
-     */
-    function _verifyProof(address user, uint256 rewardId, uint256 amount, bytes32[] calldata merkleProof)
-        private
-        view
-        returns (bool)
-    {
-        return MerkleProof.verifyCalldata(
-            merkleProof, rewardsMerkleRoots[rewardId], keccak256(bytes.concat(keccak256(abi.encode(user, amount))))
-        );
-    }
-
     // ====================
     // Validation Modifiers
     // ====================
@@ -154,31 +112,17 @@ contract SaldcoinStaking is
     // Admin Functions
     // ==============
 
-    function stakeRewards(address depositor, uint256 rewardId, uint256 amount, bytes32 root) external onlyOwner {
-        if (depositor == address(0) || amount == 0 || root == bytes32(0)) revert InvalidStakingSetup();
-
-        rewardsMerkleRoots[rewardId] = root;
-        saldcoin.safeTransferFrom(depositor, address(this), amount);
-        emit Transfer(address(0), address(this), amount);
-
-        emit RewardStaked(rewardId, amount, block.timestamp);
-    }
-
     /// @inheritdoc ISaldcoinStaking
     function setStakingActive(bool isActive) external onlyOwner {
         stakingActive = isActive;
 
         emit StakingStatusUpdated(isActive);
     }
-
-    /// @inheritdoc ISaldcoinStaking
-    function setStakingStartDate(uint64 _stakingStartDate) external onlyOwner {
-        stakingActive = true;
-        stakingStartDate = _stakingStartDate;
-
-        emit StakingStatusUpdated(true);
+    
+    /// set owner
+    function setOwner(address _owner) external onlyOwner {
+        owner = _owner;
     }
-
 
     // ==============
     // Getters
@@ -191,8 +135,4 @@ contract SaldcoinStaking is
         return saldcoin.balanceOf(address(this));
     }
 
-    /// @inheritdoc ISaldcoinStaking
-    function getRewardRedeemedAt(address user, uint256 rewardId) external view returns (uint256) {
-        return _usersRewardRedeemedAt[user][rewardId];
-    }
 }
