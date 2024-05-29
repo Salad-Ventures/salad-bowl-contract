@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin5/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin5/contracts/access/Ownable.sol";
 
+// TODO - Implement a contract that allows users to claim rewards
 contract RewardClaim is Ownable {
     using ECDSA for bytes32;
 
