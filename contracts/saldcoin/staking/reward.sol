@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -24,6 +24,9 @@ contract RewardClaim is Ownable {
         signer = _signer;
     }
 
+    function setRewardToken(address _rewardToken) external onlyOwner {
+        rewardToken = IERC20(_rewardToken);
+    }
     function claimReward(uint256 amount, bytes memory signature) external {
         bytes32 messageHash = keccak256(abi.encodePacked(msg.sender, amount));
         bytes32 ethSignedMessageHash = messageHash.toEthSignedMessageHash();

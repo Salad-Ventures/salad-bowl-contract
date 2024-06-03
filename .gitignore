@@ -3,3 +3,4 @@ artifacts
 .states
 .deps
 .vscode
+node_modules
