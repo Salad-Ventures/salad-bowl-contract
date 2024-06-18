@@ -3,7 +3,7 @@ pragma solidity >=0.8.20;
 
 import {IERC20TokenTracker} from "./IERC20TokenTracker.sol";
 
-interface ISaldcoinStaking is IERC20TokenTracker {
+interface ITokenStaking is IERC20TokenTracker {
     struct Reward {
         uint256 rewardId;
         uint256 amount;
@@ -27,21 +27,21 @@ interface ISaldcoinStaking is IERC20TokenTracker {
     event UpgraderUpdated(address _upgrader);
 
     /**
-     * @notice Stake SALD into staking contract
-     * @param amount The amount of SALD to stake from user's wallet
+     * @notice Stake tokens into staking contract
+     * @param amount The amount of tokens to stake from user's wallet
      */
     function stake(uint256 amount) external;
 
 
     /**
-     * @notice Unstake SALD from staking contract
-     * @param amount The total amount of SALD to unstake from staked balance and any unredeemed rewards
+     * @notice Unstake tokens from staking contract
+     * @param amount The total amount of tokens to unstake from staked balance and any unredeemed rewards
     */
     function unstake(uint256 amount) external;
 
     /**
      * @notice Stake rewards with specified address of depositor. Can only be called by the owner.
-     * @param depositor The address to stake SALD as rewards
+     * @param depositor The address to stake tokens as rewards
      * @param rewardId The ID of reward
      * @param amount The amount of rewards to stake
      * @param root The Merkle root to verify users' reward
