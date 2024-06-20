@@ -128,6 +128,7 @@ Once deployed, you can interact with the smart contracts directly within Remix:
 
 2. To claim rewards:
     - Find the `claimReward` function in the deployed contract section.
+    - Enter the token address of the token you want to claim.
     - Enter the amount of rewards to claim.
     - Provide the signature for verification.
     - Click "transact" and confirm the transaction in MetaMask.
@@ -137,9 +138,14 @@ Once deployed, you can interact with the smart contracts directly within Remix:
     - Enter the address of the new signer.
     - Click "transact" and confirm the transaction in MetaMask.
 
-4. To set a new reward token (owner only):
-    - Find the `setRewardToken` function in the deployed contract section.
-    - Enter the address of the new reward token.
+4. To add a claimable token (owner only):
+    - Find the `addClaimableToken` function in the deployed contract section.
+    - Enter the address of the reward token you want to add.
+    - Click "transact" and confirm the transaction in MetaMask.
+
+5. To remove a claimable token (owner only):
+    - Find the `removeClaimableToken` function in the deployed contract section.
+    - Enter the address of the reward token you want to remove.
     - Click "transact" and confirm the transaction in MetaMask.
 
 ## 🔍 Contracts Overview
@@ -164,9 +170,10 @@ The `TokenStaking` contract allows users to stake and unstake tokens.
 The `RewardClaim` contract allows users to claim rewards in ERC20 tokens.
 
 - **Functions:**
-  - `claimReward(uint256 amount, bytes memory signature)`: Claims rewards for the user.
+  - `claimReward(uint256 amount, token address, bytes memory signature)`: Claims rewards for the user.
   - `setSigner(address _signer)`: Sets the signer address.
-  - `setRewardToken(address _rewardToken)`: Sets the reward token address.
+  - `addClaimableToken(address _token)`: Sets the reward token address.
+  - `removeClaimableToken(address _token)`: Sets the reward token address.
 
 ## 📜 License
 
