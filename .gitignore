@@ -3,4 +3,5 @@ artifacts
 .states
 .deps
 .vscode
+.DS_Store
 node_modules
