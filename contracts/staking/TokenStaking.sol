@@ -20,14 +20,12 @@ contract TokenStaking is
     IERC20 public stakeToken;
     bool public stakingActive;
 
-    uint64 public stakingStartDate;
-
-
     mapping(address user => uint256 balance) public balanceOf;
-    mapping(address user => mapping(uint256 rewardId => uint256 redeemedAt)) private _usersRewardRedeemedAt;
 
     address public owner;
 
+    event StakeTokenSet(address indexed previousToken, address indexed newToken);
+    event OwnerSet(address indexed previousOwner, address indexed newOwner);
  
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(address _stakeToken) {
@@ -36,8 +34,10 @@ contract TokenStaking is
         stakeToken = IERC20(_stakeToken);
     }
 
-    function setStakeToken(address _stakeToken) external onlyOwner{
+    function setStakeToken(address _stakeToken) external onlyOwner {
+        address previousToken = address(stakeToken);
         stakeToken = IERC20(_stakeToken);
+        emit StakeTokenSet(previousToken, _stakeToken);
     }
 
 
@@ -126,13 +126,14 @@ contract TokenStaking is
     /// @inheritdoc ITokenStaking
     function setStakingActive(bool isActive) external onlyOwner {
         stakingActive = isActive;
-
         emit StakingStatusUpdated(isActive);
     }
     
     /// set owner
     function setOwner(address _owner) external onlyOwner {
+        address previousOwner = owner;
         owner = _owner;
+        emit OwnerSet(previousOwner, _owner);
     }
 
     // ==============
