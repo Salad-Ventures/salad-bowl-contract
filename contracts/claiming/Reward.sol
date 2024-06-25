@@ -12,7 +12,7 @@ contract ClaimReward is Ownable {
 
     address public signer;
     mapping(address => bool) private claimableTokens;
-    mapping(bytes32 => bool) public usedSignatures;
+    mapping(bytes => bool) public usedSignatures;
     mapping(address => uint256) public nonces;
 
     event RewardClaimed(address indexed user, address indexed token, uint256 amount);
@@ -52,13 +52,14 @@ contract ClaimReward is Ownable {
         address _signer = ethSignedMessageHash.recover(signature);
         require(_signer == signer, "Invalid signature");
 
-        require(!usedSignatures[ethSignedMessageHash], "Signature has already been used");
-        usedSignatures[ethSignedMessageHash] = true;
+        require(!usedSignatures[signature], "Signature has already been used");
+        usedSignatures[signature] = true;
+        
+        nonces[msg.sender]++;
 
         uint256 contractBalance = IERC20(token).balanceOf(address(this));
         require(contractBalance >= amount, "Not enough tokens of that kind");
 
-        // Transfer the reward using the specified ERC20 token
         require(IERC20(token).transfer(msg.sender, amount), "Token transfer failed");
 
         emit RewardClaimed(msg.sender, token, amount);
