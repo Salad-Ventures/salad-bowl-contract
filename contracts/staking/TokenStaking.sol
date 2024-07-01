@@ -8,7 +8,6 @@ import {IERC20Metadata} from "@openzeppelin5/contracts/token/ERC20/extensions/IE
 
 import {ITokenStaking} from "./interfaces/ITokenStaking.sol";
 
-
 contract TokenStaking is
     ReentrancyGuardUpgradeable,
     ITokenStaking
@@ -19,27 +18,21 @@ contract TokenStaking is
 
     IERC20 public stakeToken;
     bool public stakingActive;
+    uint256 public totalStaked;
 
-    mapping(address user => uint256 balance) public balanceOf;
+    mapping(address => uint256) public balanceOf;
 
     address public owner;
 
     event StakeTokenSet(address indexed previousToken, address indexed newToken);
     event OwnerSet(address indexed previousOwner, address indexed newOwner);
- 
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor(address _stakeToken) {
-        owner=msg.sender;
-        stakingActive=true;
+        owner = msg.sender;
+        stakingActive = true;
         stakeToken = IERC20(_stakeToken);
     }
-
-    function setStakeToken(address _stakeToken) external onlyOwner {
-        address previousToken = address(stakeToken);
-        stakeToken = IERC20(_stakeToken);
-        emit StakeTokenSet(previousToken, _stakeToken);
-    }
-
 
     function name() external view returns (string memory) {
         return IERC20Metadata(address(stakeToken)).name();
@@ -83,6 +76,7 @@ contract TokenStaking is
         unchecked {
             balanceOf[user] += amount;
         }
+        totalStaked += amount;
         stakeToken.safeTransferFrom(user, address(this), amount);
         emit Transfer(address(0), user, amount);
 
@@ -94,6 +88,7 @@ contract TokenStaking is
         if (userBalance < amount) revert InsufficientStakedBalance();
 
         balanceOf[user] = userBalance - amount;
+        totalStaked -= amount;
         
         stakeToken.safeTransfer(user, amount);
         emit Transfer(user, address(0), amount);
@@ -144,7 +139,6 @@ contract TokenStaking is
      * @notice Get the total staked amount
      */
     function totalSupply() external view returns (uint256) {
-        return stakeToken.balanceOf(address(this));
+        return totalStaked;
     }
-
 }
